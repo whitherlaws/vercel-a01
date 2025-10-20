@@ -11,7 +11,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function Home() {
+export default function Home({ version }) {
   return (
     <div
       className={`${geistSans.className} ${geistMono.className} font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20`}
@@ -112,7 +112,33 @@ export default function Home() {
           />
           Go to nextjs.org →
         </a>
+
+        {/* Display project version from package.json */}
+        <div className="w-full text-center mt-2 text-sm font-mono text-slate-600 dark:text-slate-300">
+          Version {version ?? "unknown"}
+        </div>
       </footer>
     </div>
   );
+}
+
+export async function getStaticProps() {
+  let version = null;
+  try {
+    // require inside getStaticProps to avoid client-side bundling of node modules
+    const fs = require("fs");
+    const path = require("path");
+    const pkgPath = path.join(process.cwd(), "package.json");
+    const raw = fs.readFileSync(pkgPath, "utf8");
+    const pkg = JSON.parse(raw);
+    version = pkg.version ?? null;
+  } catch (e) {
+    // ignore errors, version will be null
+  }
+
+  return {
+    props: {
+      version,
+    },
+  };
 }
